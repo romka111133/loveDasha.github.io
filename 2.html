@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Love Animation</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f9e5ec; /* Мягкий розовый фон */
+            font-family: 'Georgia', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .heart-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .heart {
+            position: absolute;
+             /* Цвет текста задается классом */
+            font-size: 3rem;
+            opacity: 0;
+            animation: floatUp 40s linear infinite;
+            transform: rotate(0deg);
+            user-select: none;
+            will-change: transform, opacity;
+            white-space: nowrap; /* Чтобы фраза не переносилась */
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(100vh) scale(0); }
+            5% { opacity: 1; transform: translateY(0) scale(1); }
+            95% { opacity: 1; transform: translateY(-100vh) scale(1); }
+            100% { opacity: 0; transform: translateY(-100vh) scale(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .pink   { color: #ff758c; }
+        .red    { color: #ff3d7f; }
+        .white  { color: #ffffff; }
+        .peach  { color: #ffebee; }
+
+        /* --- ИЗМЕНЕНИЯ ---
+         * 1. Уменьшен размер шрифта для лучшего размещения на экранах.
+         * 2. Добавлены сердечки (символы 🩷) по бокам от текста.
+         * 3. Фиолетовый цвет сохранен.
+         */
+        .final-message {
+            position: absolute;
+            text-align: center;
+            font-size: 3rem; /* Уменьшенный размер */
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            color: pink; /* Фиолетовый */
+            opacity: 0;
+            animation: revealMessage 40s forwards;
+            mix-blend-mode: difference;
+            z-index: 3;
+            max-width: 80%;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        @keyframes revealMessage {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="heart-container" id="hearts"></div>
+    
+    <!-- ОБНОВЛЕННЫЙ ТЕКСТ С СЕРДЕЧКАМИ -->
+    <div class="final-message">🩷 Для Даши от Ромы 🩷</div>
+
+    <script>
+        const container = document.getElementById('hearts');
+        const phrases = ["I love you"]; // Массив фраз
+        const colors = ['pink', 'red', 'white', 'peach'];
+        const totalHearts = 50;
+        const existingPositions = [];
+
+        function createHeart(positionsArray) {
+            const heart = document.createElement('span');
+            heart.classList.add('heart');
+            heart.classList.add(colors[Math.floor(Math.random() * colors.length)]);
+            heart.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+
+            let isOverlapping = true;
+            let newLeft, newTop;
+            const maxAttempts = 50;
+            let attempts = 0;
+
+            while (isOverlapping && attempts < maxAttempts) {
+                isOverlapping = false;
+                newLeft = Math.random() * window.innerWidth;
+                newTop = Math.random() * window.innerHeight;
+
+                for (let pos of positionsArray) {
+                    const dx = newLeft - pos.left;
+                    const dy = newTop - pos.top;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+
+                    if (distance < 150) {
+                        isOverlapping = true;
+                        break;
+                    }
+                }
+                attempts++;
+            }
+
+            if (!isOverlapping) {
+                positionsArray.push({left: newLeft, top: newTop});
+                heart.style.left = `${newLeft}px`;
+                heart.style.top = `${newTop}px`;
+                heart.style.fontSize = (1.5 + Math.random()) + 'rem';
+
+                const delay = Math.random() * 40;
+                heart.style.animationDelay = `${delay}s`;
+
+                const rotation = (Math.random() - 0.5) * 10;
+                heart.style.transform += `rotate(${rotation}deg)`;
+
+                container.appendChild(heart);
+
+                setTimeout(() => {
+                    heart.remove();
+                    const index = positionsArray.findIndex(p => p.left === newLeft && p.top === newTop);
+                    if (index > -1) positionsArray.splice(index, 1);
+                }, 41000);
+            }
+        }
+
+        // Бесконечная генерация "I love you"
+        setInterval(createHeart, 500, existingPositions);
+        
+        // Начальный набор сердец
+        for (let i = 0; i < totalHearts; i++) {
+            createHeart(existingPositions);
+        }
+    </script>
+</body>
+</html>
